@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-n=15
+n=30
 
 mkdir -p results
 
@@ -40,6 +40,8 @@ for ((i = 600; i <= 3000; i += 400)); do
     echo $line_multi | java MatrixProduct 2> /dev/null | grep 'Time: ' | sed -E 's/.*cols \? //' >> results/line_multi_java.txt
 
 done
+
+n=15
 
 echo "" > results/block_multi_128.txt
 echo "" > results/block_multi_256.txt
