@@ -9,7 +9,6 @@ public class Auth {
 
     public Auth() {
         users = new HashMap<>();
-        // Add some users for testing
         users.put("user1", "password1");
         users.put("user2", "password2");
     }
