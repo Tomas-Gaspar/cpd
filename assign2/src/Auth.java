@@ -9,7 +9,6 @@ public class Auth {
 
     public Auth() {
         users = new HashMap<>();
-        // Add some users for testing
         users.put("user1", "password1");
         users.put("user2", "password2");
     }
@@ -22,22 +21,27 @@ public class Auth {
 
         switch (response) {
             case 1 -> {
-                if (users.containsKey(username) && users.get(username).equals(password)) {
-                    writer.println("Authentication successful");
+                if (users.containsKey(username)) {
+                    writer.println(0);
+                    return 0;
+                } else if (password.length() < 4) {
+                    writer.println(2);
+                    return 0;
                 } else {
-                    if (users.containsKey(username) || password.length() < 4) {
-                        // User already in use or password too short
-                    } else {
-                        users.put(username, password);
-                    }
-                    writer.println("Authentication failed");
+                    users.put(username, password);
+                    writer.println(1);
+                    System.out.println("User added to DB: " + users);
+                    return 1;
                 }
-                System.out.println("Invalid credentials");
-                return 0;
             }
             case 2 -> {
-                System.out.println("Login successful");
-                return 1;
+                if (users.containsKey(username) && users.get(username).equals(password)) {
+                    writer.println(1);
+                    return 1;
+                } else {
+                    writer.println(0);
+                    return 0;
+                }
             }
             default -> {
                 System.out.println("Unexpected error");
@@ -57,14 +61,10 @@ public class Auth {
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 writer = new PrintWriter(socket.getOutputStream(), true);
 
-                String username = reader.readLine();
-                String password = reader.readLine();
+                int response = autenticate();
 
-                if (users.containsKey(username) && users.get(username).equals(password)) {
-                    writer.println("Authentication successful");
-                } else {
-                    writer.println("Authentication failed");
-                }
+                if (response == 1)
+                    writer.println();
             }
         } catch (IOException ex) {
             System.out.println("Server exception: " + ex.getMessage());
