@@ -1,21 +1,19 @@
 import java.net.*;
+import java.util.List;
 import java.io.*;
 
 public class MainMenuServer {
     private Socket socket;
+    private UserDB userDB;
     private String clientId;
 
-    public static enum MainMenuOption {
-        MATCHMAKING,
-        QUIT
-    }
-
-    public MainMenuServer(Socket socket, String clientId) {
+    public MainMenuServer(Socket socket, UserDB userDB, String clientId) {
         this.socket = socket;
+        this.userDB = userDB;
         this.clientId = clientId;
     }
 
-    public MainMenuOption start() {
+    public ServerController.MainMenuOption start() {
         try {
             InputStream input = socket.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -27,13 +25,21 @@ public class MainMenuServer {
                 String option = reader.readLine();
                 switch (option) {
                     case "1":
-                        return MainMenuOption.MATCHMAKING;
+                        writer.write(0);
+                        return ServerController.MainMenuOption.MATCHMAKING;
                     case "2":
-                        // go to leaderboard
+                        writer.write(1);
+                        List<Pair<String,Integer>> leaderboard = userDB.getLeaderboard();
+                        writer.format("%-20s %s\n", "Username", "Score");
+                        for (Pair<String,Integer> entry : leaderboard) {
+                            writer.format("%-20s %d\n", entry.getKey(), entry.getValue());
+                        }
                         break;
                     case "3":
-                        return MainMenuOption.QUIT;
+                        writer.write(2);
+                        return ServerController.MainMenuOption.QUIT;
                     default:
+                        writer.write(3);
                         break;
                 }
             }
@@ -41,6 +47,6 @@ public class MainMenuServer {
             System.out.println("Server exception: " + ex.getMessage());
             ex.printStackTrace();
         }
-        return MainMenuOption.QUIT;
+        return ServerController.MainMenuOption.QUIT;
     }
 }

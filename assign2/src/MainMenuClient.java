@@ -1,8 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
@@ -14,43 +12,40 @@ public class MainMenuClient {
         this.socket = socket;
     }
 
-    public void start() {
-        try {
-            Scanner sc = new Scanner(System.in);
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
-            InputStream input = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+    public void start() throws IOException {
+        Scanner sc = new Scanner(System.in);
+        PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            while (true) {
-                System.out.println(reader.readLine());
-                System.out.println("Please select an option:");
-                System.out.println("1. Play");
-                System.out.println("2. Leaderboard");
-                System.out.println("3. Quit");
+        while (true) {
+            System.out.println("Please select an option:");
+            System.out.println("1. Play");
+            System.out.println("2. Leaderboard");
+            System.out.println("3. Quit");
 
-                String option = sc.nextLine();
-                writer.println(option);
-                
-                switch (option) {
-                    case "1":
-                        return;
-                    case "2":
-                        String leaderboard = reader.readLine();
-                        System.out.println(leaderboard);
-                        break;
-                    case "3":
-                        System.out.println("Goodbye!");
-                        return;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
-                        break;
-                }
+            String option = sc.nextLine();
+            writer.println(option);
+
+            int response = reader.read();
+            switch (response) {
+                case 0:
+                    System.out.println("Starting game...");
+                    sc.close();
+                    return;
+                case 1:
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                    break;
+                case 2:
+                    System.out.println("Quitting...");
+                    sc.close();
+                    return;
+                case 3:
+                    System.out.println("Invalid option");
+                    break;
             }
-        } 
-        catch (IOException ex) {
- 
-            System.out.println("I/O error: " + ex.getMessage());
         }
-    }
+    } 
 }
