@@ -19,7 +19,7 @@ public class AuthClient {
         String password = sc.nextLine();
         writer.println(password);
 
-        writer.println(1);
+        writer.println(2);
 
         int response = Integer.parseInt(reader.readLine());
 
@@ -66,6 +66,10 @@ public class AuthClient {
                 clientID = Integer.parseInt(reader.readLine());
                 return true;
             }
+            case 2 -> {
+                System.out.println("Password too short");
+                return false;
+            }
             default -> {
                 System.out.println("Unexpected error");
                 return false;
@@ -108,8 +112,7 @@ public class AuthClient {
             reader = new BufferedReader(new InputStreamReader(input));
 
             authenticate();
-
-            System.out.println(reader.readLine());
+            System.out.println("clientID: " + clientID);
 
             sc.close();
         } catch (UnknownHostException ex) {
