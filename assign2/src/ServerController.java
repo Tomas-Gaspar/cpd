@@ -32,7 +32,11 @@ public class ServerController {
                             // go to matchmaking
                             break;
                         case QUIT:
-                            // close socket and thread
+                            try {
+                                socket.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             break;
                         default:
                             break;

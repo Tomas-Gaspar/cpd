@@ -12,7 +12,7 @@ public class MainMenuClient {
         this.socket = socket;
     }
 
-    public void start() throws IOException {
+    public int start() throws IOException {
         Scanner sc = new Scanner(System.in);
         PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -31,7 +31,7 @@ public class MainMenuClient {
                 case 0:
                     System.out.println("Starting game...");
                     sc.close();
-                    return;
+                    return 0;
                 case 1:
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -41,7 +41,7 @@ public class MainMenuClient {
                 case 2:
                     System.out.println("Quitting...");
                     sc.close();
-                    return;
+                    return 2;
                 case 3:
                     System.out.println("Invalid option");
                     break;
