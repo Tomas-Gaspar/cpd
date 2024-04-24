@@ -16,6 +16,18 @@ public class ServerController {
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Server is listening on port " + port);
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    userDB.storeDB();
+                    serverSocket.close();
+                } catch (IOException e) {
+                    System.out.println("Error closing server.");
+                    e.printStackTrace();
+                }
+            }
+        });
+
         while (true) {
             Socket socket = serverSocket.accept();
 
