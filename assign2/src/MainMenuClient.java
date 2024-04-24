@@ -17,6 +17,8 @@ public class MainMenuClient {
         PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+        String welcomeMessage = reader.readLine();
+        System.out.println(welcomeMessage);
         while (true) {
             System.out.println("Please select an option:");
             System.out.println("1. Play");
@@ -26,23 +28,25 @@ public class MainMenuClient {
             String option = sc.nextLine();
             writer.println(option);
 
-            int response = reader.read();
+            String response = reader.readLine();
             switch (response) {
-                case 0:
+                case "0":
                     System.out.println("Starting game...");
                     sc.close();
                     return 0;
-                case 1:
+                case "1":
                     String line;
                     while ((line = reader.readLine()) != null) {
+                        if (line.equals("1"))
+                            break;
                         System.out.println(line);
                     }
                     break;
-                case 2:
+                case "2":
                     System.out.println("Quitting...");
                     sc.close();
                     return 2;
-                case 3:
+                case "3":
                     System.out.println("Invalid option");
                     break;
             }

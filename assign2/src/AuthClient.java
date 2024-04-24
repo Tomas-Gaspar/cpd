@@ -25,13 +25,17 @@ public class AuthClient {
             String password = sc.nextLine();
             writer.println(password);
 
-            int response = reader.read();
+            String response = reader.readLine();
 
-            if (response == 0) {
-                System.out.println("Login successful");
-                return;
-            } else if (response == 1) {
-                System.out.println("Invalid credentials");
+            switch (response) {
+                case "0":
+                    System.out.println("Login successful");
+                    return;
+                case "1":
+                    System.out.println("Invalid credentials");
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -52,18 +56,21 @@ public class AuthClient {
             String passwordConfirm = sc.nextLine();
             writer.println(passwordConfirm);
 
-            int response = reader.read();
+            String response = reader.readLine();
 
-            if (response == 0) {
-                System.out.println("Register successful");
-                return;
-            } else if (response == 1) {
-                if (password.length() < 4)
-                    System.out.println("Password must be at least 4 characters long");
-                else if (!password.equals(passwordConfirm))
-                    System.out.println("Passwords do not match");
-                else
-                    System.out.println("Username already exists");
+            switch (response) {
+                case "0":
+                    System.out.println("Register successful");
+                    return;
+                case "1":
+                    if (password.length() < 4)
+                        System.out.println("Password must be at least 4 characters long");
+                    else if (!password.equals(passwordConfirm))
+                        System.out.println("Passwords do not match");
+                    else
+                        System.out.println("Username already exists");
+                default:
+                    break;
             }
         }
     }
@@ -75,21 +82,23 @@ public class AuthClient {
 
         while (true) {
             System.out.println("Select an option:");
-            System.out.println("1 - Register");
-            System.out.println("2 - Login");
+            System.out.println("1 - Login");
+            System.out.println("2 - Register");
 
             String option = sc.nextLine();
             writer.println(option);
-            int response = reader.read();
+            String response = reader.readLine();
 
-             if (response == 0) {
-                login();
-                return;
-            } else if (response == 1) {
-                register();
-                return;
-            } else {
-                System.out.println("Invalid option");
+            switch (response) {
+                case "0":
+                    login();
+                    return;
+                case "1":
+                    register();
+                    return;
+                default:
+                    System.out.println("Invalid option");
+                    break;
             }
         }
     }

@@ -25,10 +25,10 @@ public class AuthServer {
             }
 
             if (userDB.login(username, password)) {
-                writer.print(0);
+                writer.println("0");
                 return username;
             } else {
-                writer.print(1);
+                writer.println("1");
             }
         }
     }
@@ -46,10 +46,10 @@ public class AuthServer {
             }
 
             if (userDB.register(username, password, passwordConfirm)) {
-                writer.print(0);
+                writer.println("0");
                 return username;
             } else {
-                writer.print(1);
+                writer.println("1");
             }
         }
     }
@@ -64,13 +64,13 @@ public class AuthServer {
                 String option = reader.readLine();
                 switch (option) {
                     case "1":
-                        writer.print(0);
+                        writer.println("0");
                         return login();
                     case "2":
-                        writer.print(1);
+                        writer.println("1");
                         return register();
                     default:
-                        writer.print(-1);
+                        writer.println("-1");
                         break;
                 }
             }

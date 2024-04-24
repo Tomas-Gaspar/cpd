@@ -25,21 +25,22 @@ public class MainMenuServer {
                 String option = reader.readLine();
                 switch (option) {
                     case "1":
-                        writer.write(0);
+                        writer.println("0");
                         return ServerController.MainMenuOption.MATCHMAKING;
                     case "2":
-                        writer.write(1);
+                        writer.println("1");
                         List<Pair<String,Integer>> leaderboard = userDB.getLeaderboard();
                         writer.format("%-20s %s\n", "Username", "Score");
                         for (Pair<String,Integer> entry : leaderboard) {
                             writer.format("%-20s %d\n", entry.getKey(), entry.getValue());
                         }
+                        writer.println("1");
                         break;
                     case "3":
-                        writer.write(2);
+                        writer.println("2");
                         return ServerController.MainMenuOption.QUIT;
                     default:
-                        writer.write(3);
+                        writer.println("3");
                         break;
                 }
             }
