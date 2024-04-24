@@ -13,6 +13,9 @@ public class ServerController {
         UserDB userDB = new UserDB();
         userDB.loadDB();
 
+        MatchmakingServer matchmakingServer = new MatchmakingServer();
+        matchmakingServer.startMatchmaking();
+
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Server is listening on port " + port);
 
@@ -38,20 +41,24 @@ public class ServerController {
                     String clientId = authServer.start();
 
                     MainMenuServer mainMenuServer = new MainMenuServer(socket, userDB, clientId);
-                    MainMenuOption option = mainMenuServer.start();
-                    switch (option) {
-                        case MATCHMAKING:
-                            // go to matchmaking
-                            break;
-                        case QUIT:
-                            try {
-                                socket.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-                        default:
-                            break;
+
+                    while (true) {                        
+                        MainMenuOption option = mainMenuServer.start();
+                        switch (option) {
+                            case MATCHMAKING:
+                                matchmakingServer.addToQueue(clientId, socket);
+                                // TODO maybe thread sleep while in matchmaking server
+                                break;
+                            case QUIT:
+                                try {
+                                    socket.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                return;
+                            default:
+                                break;
+                        }
                     }
                 }
             }).start();
