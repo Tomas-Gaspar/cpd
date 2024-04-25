@@ -3,119 +3,103 @@ import java.net.*;
 import java.util.Scanner;
 
 public class AuthClient {
-    private static PrintWriter writer;
-    private static BufferedReader reader;
-    private static int clientID;
+    private Scanner sc;
+    private BufferedReader reader;
+    private PrintWriter writer;
 
-    public static Boolean login() throws IOException {
+    private Socket socket;
+
+    public AuthClient(Socket socket) {
+        this.socket = socket;
+    }
+
+    public void login() throws IOException {
         System.out.println("Login");
-        Scanner sc = new Scanner(System.in);
 
-        System.out.print("Username: ");
-        String username = sc.nextLine();
-        writer.println(username);
+        while (true) {
+            System.out.print("Username: ");
+            String username = sc.nextLine();
+            writer.println(username);
+            
+            System.out.print("Password: ");
+            String password = sc.nextLine();
+            writer.println(password);
 
-        System.out.print("Password: ");
-        String password = sc.nextLine();
-        writer.println(password);
+            String response = reader.readLine();
 
-        writer.println(1);
-
-        int response = Integer.parseInt(reader.readLine());
-
-        switch (response) {
-            case 0 -> {
-                System.out.println("Invalid credentials");
-                return false;
-            }
-            case 1 -> {
-                System.out.println("Login successful");
-                clientID = Integer.parseInt(reader.readLine());
-                return true;
-            }
-            default -> {
-                System.out.println("Unexpected error");
-                return false;
+            switch (response) {
+                case "0":
+                    System.out.println("Login successful");
+                    return;
+                case "1":
+                    System.out.println("Invalid credentials");
+                    break;
+                default:
+                    break;
             }
         }
     }
 
-    public static Boolean register() throws IOException {
+    public void register() throws IOException {
         System.out.println("Register");
-        Scanner sc = new Scanner(System.in);
 
-        System.out.print("Username: ");
-        String username = sc.nextLine();
-        writer.println(username);
+        while (true) {
+            System.out.print("Username: ");
+            String username = sc.nextLine();
+            writer.println(username);
+            
+            System.out.print("Password: ");
+            String password = sc.nextLine();
+            writer.println(password);
 
-        System.out.print("Password: ");
-        String password = sc.nextLine();
-        writer.println(password);
+            System.out.print("Confirm password: ");
+            String passwordConfirm = sc.nextLine();
+            writer.println(passwordConfirm);
 
-        writer.println(1);
+            String response = reader.readLine();
 
-        int response = Integer.parseInt(reader.readLine());
-
-        switch (response) {
-            case 0 -> {
-                System.out.println("User already exists");
-                return false;
-            }
-            case 1 -> {
-                System.out.println("User registered successfully");
-                clientID = Integer.parseInt(reader.readLine());
-                return true;
-            }
-            default -> {
-                System.out.println("Unexpected error");
-                return false;
+            switch (response) {
+                case "0":
+                    System.out.println("Register successful");
+                    return;
+                case "1":
+                    if (password.length() < 4)
+                        System.out.println("Password must be at least 4 characters long");
+                    else if (!password.equals(passwordConfirm))
+                        System.out.println("Passwords do not match");
+                    else
+                        System.out.println("Username already exists");
+                default:
+                    break;
             }
         }
     }
 
-    public static void authenticate() throws IOException {
-        boolean authenticated = false;
+    public void start() throws IOException {
+        sc = new Scanner(System.in);
+        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        writer = new PrintWriter(socket.getOutputStream(), true);
 
-        while (!authenticated) {
+        while (true) {
             System.out.println("Select an option:");
-            System.out.println("1 - Register");
-            System.out.println("2 - Login");
+            System.out.println("1 - Login");
+            System.out.println("2 - Register");
 
-            Scanner sc = new Scanner(System.in);
             String option = sc.nextLine();
+            writer.println(option);
+            String response = reader.readLine();
 
-            switch (option) {
-                case "1" -> authenticated = register();
-                case "2" -> authenticated = login();
-                default -> System.out.println("Invalid option");
+            switch (response) {
+                case "0":
+                    login();
+                    return;
+                case "1":
+                    register();
+                    return;
+                default:
+                    System.out.println("Invalid option");
+                    break;
             }
-
-            System.out.println("\n");
-        }
-    }
-
-    public static void main(String[] args) {
-        if (args.length < 2) return;
-
-        String hostname = args[0];
-        int port = Integer.parseInt(args[1]);
-
-        try (Socket socket = new Socket(hostname, port)) {
-            Scanner sc = new Scanner(System.in);
-            OutputStream output = socket.getOutputStream();
-            writer = new PrintWriter(output, true);
-            InputStream input = socket.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(input));
-
-            authenticate();
-
-            System.out.println(reader.readLine());
-
-            sc.close();
-        } catch (UnknownHostException ex) {
-            System.out.println("Server not found: " + ex.getMessage());
-        } catch (IOException ex) {
-            System.out.println("I/O error: " + ex.getMessage());
         }
     }
 }
