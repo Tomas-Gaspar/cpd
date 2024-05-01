@@ -1,6 +1,9 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Random;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ServerController {
     public static enum MainMenuOption {
@@ -8,12 +11,18 @@ public class ServerController {
         QUIT
     }
 
+    public static final int MAX_GUESS_TIMEOUT = 20000;
+
+    private static final Random random = new Random();
+
     public static void main(String[] args) throws IOException {
         int port = Integer.parseInt(args[0]);
-        UserDB userDB = new UserDB();
+        ReentrantLock lock = new ReentrantLock();
+        UserDB userDB = new UserDB(lock);
         userDB.loadDB();
 
-        MatchmakingServer matchmakingServer = new MatchmakingServer();
+
+        MatchmakingServer matchmakingServer = new MatchmakingServer(lock);
         matchmakingServer.startMatchmaking();
 
         ServerSocket serverSocket = new ServerSocket(port);
@@ -46,8 +55,44 @@ public class ServerController {
                         MainMenuOption option = mainMenuServer.start();
                         switch (option) {
                             case MATCHMAKING:
-                                matchmakingServer.addToQueue(clientId, socket);
-                                // TODO maybe thread sleep while in matchmaking server
+                                Condition matchMakingCondition = lock.newCondition(), gameCondition = lock.newCondition();
+                                matchmakingServer.addToQueue(clientId, socket, matchMakingCondition, gameCondition);
+                                lock.lock();
+                                try {
+                                    while (matchmakingServer.getPlayerGame(clientId) == null) {
+                                        try {
+                                            // wait to find a match
+                                            matchMakingCondition.await();
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                } finally {
+                                    lock.unlock();
+                                }
+
+                                GameServer gameServer = matchmakingServer.getPlayerGame(clientId);
+
+                                int guess = GameServer.getGuess(socket);
+                                gameServer.addGuess(clientId, guess);
+
+                                lock.lock();
+                                try {
+                                    while (gameServer.awaitingGuesses()) {
+                                        try {
+                                            // wait for other players to guess
+                                            gameCondition.await();
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                } finally {
+                                    lock.unlock();
+                                }
+
+                                String result = gameServer.getResult(clientId);
+                                GameServer.sendResult(socket, result);
+
                                 break;
                             case QUIT:
                                 try {
@@ -63,5 +108,9 @@ public class ServerController {
                 }
             }).start();
         }
+    }
+
+    public synchronized static int getRandomNumber() {
+        return random.nextInt(100);
     }
 }

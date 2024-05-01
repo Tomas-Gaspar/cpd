@@ -31,8 +31,7 @@ public class MainMenuClient {
             String response = reader.readLine();
             switch (response) {
                 case "0":
-                    System.out.println("Starting game...");
-                    sc.close();
+                    System.out.println("Entering Queue...");
                     return 0;
                 case "1":
                     String line;
@@ -44,7 +43,6 @@ public class MainMenuClient {
                     break;
                 case "2":
                     System.out.println("Quitting...");
-                    sc.close();
                     return 2;
                 case "3":
                     System.out.println("Invalid option");

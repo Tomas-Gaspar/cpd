@@ -14,12 +14,16 @@ public class ClientController {
             authClient.start();
 
             MainMenuClient mainMenuClient = new MainMenuClient(socket);
-            int response = mainMenuClient.start();
+            GameClient gameClient = new GameClient(socket);
 
-            if (response == 0) {
-                // game
-            } else if (response == 2) {
-                return;
+            while (true) {
+                int response = mainMenuClient.start();
+    
+                if (response == 0) {
+                    gameClient.start();
+                } else if (response == 2) {
+                    return;
+                }
             }
 
         } catch (UnknownHostException ex) {

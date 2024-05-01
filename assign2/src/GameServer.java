@@ -1,67 +1,146 @@
-import java.io.*;
-import java.net.*;
-import java.text.DecimalFormat;
-import java.util.Random;
-import java.util.concurrent.locks.ReentrantLock;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 public class GameServer {
-    private static final ReentrantLock lock = new ReentrantLock();
-    private static final DecimalFormat decfor = new DecimalFormat("0.00"); 
-    public static int number = new Random().nextInt(100);
+    private int number;
+    private boolean awaitingGuesses = true;
+    private List<Condition> conditions;
+    private Map<String, Integer> guesses = new HashMap<>();
+    private List<Pair<String, Integer>> results = new ArrayList<>();
+    private Lock lock;
 
-    public static void main(String[] args) {
-        if (args.length < 1) return;
- 
-        int port = Integer.parseInt(args[0]);
+    public GameServer(List<Condition> conditions, Lock lock) {
+        this.number = ServerController.getRandomNumber();
+        this.conditions = conditions;
+        this.lock = lock;
+    }
 
-        System.out.println("Secret number: " + number);
- 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Server is listening on port " + port);
- 
-            while (true) {
-            Socket socket = serverSocket.accept();
+    public void addGuess(String clientId, Integer guess) {
+        lock.lock();
+        try {
+            guesses.put(clientId, guess);
+        } finally {
+            lock.unlock();
+        }
+    }
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+    public boolean awaitingGuesses() {
+        return awaitingGuesses;
+    }
+
+    public String getResult(String clientId) {
+        String output = "";
+
+        lock.lock();
+        try {
+            Integer clientPos = null;
+            for (int i = 0; i < results.size(); i++) {
+                if (results.get(i).getKey().equals(clientId)) {
+                    clientPos = i;
+                }
+
+                output += String.format("%d. %-20s %s%n", i+1, results.get(i).getKey(), results.get(i).getValue());
+            }
+
+            if (clientPos != null)
+                output += "\nYour place: " + clientPos+1 + "\n";
+            output += "Correct number: " + number + "\n";
+        } finally {
+            lock.unlock();
+        }
+
+        return output;
+    }
+
+    public void startGame() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long startTime = System.currentTimeMillis();
+                // wait for all guesses (max 20 seconds)
+                while (guesses.keySet().size() < conditions.size() && (System.currentTimeMillis() - startTime) < ServerController.MAX_GUESS_TIMEOUT) {
                     try {
-                        InputStream input = socket.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                        OutputStream output = socket.getOutputStream();
-                        PrintWriter writer = new PrintWriter(output, true);
-
-                        String name = reader.readLine();
-
-                        System.out.println("New client connected: "+ name);
-
-                        long start = System.nanoTime();
-
-                        Integer num = Integer.valueOf(reader.readLine());
-                        
-                        while (num != number) {
-                            writer.println("Wrong Guess: " + num);
-                            num = Integer.valueOf(reader.readLine());
-                        }
-
-                        writer.println("Right Guess!");
-
-                        long end = System.nanoTime();
-                        double time = Math.round((end - start) * 1e-9 * 100.0) / 100.0;
-
-                        writer.println("Time: " + time + " seconds");
-
-                        System.out.println("Client " + name + " guessed in " +  time + " seconds!");
-
-                    } catch (IOException ex) {
-                        System.out.println("Server exception: " + ex.getMessage());
-                        ex.printStackTrace();
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
-            }).start();
+
+                lock.lock();
+                try {
+                    awaitingGuesses = false;
+
+                    for (var entry : guesses.entrySet())
+                        results.add(new Pair<>(entry.getKey(), entry.getValue()));
+                    results.sort((a, b) -> Math.abs(a.getValue() - number) - Math.abs(b.getValue() - number));
+
+                    // TODO update elo
+    
+                    for (Condition condition : conditions)
+                        condition.signal();
+                } finally {
+                    lock.unlock();
+                }
+
+            }
+        }).start();
+    }
+
+    public static int getGuess(Socket socket) {
+        int guess = -1;
+        long startTime = System.currentTimeMillis();
+
+        try {
+            InputStream input = socket.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            OutputStream output = socket.getOutputStream();
+            PrintWriter writer = new PrintWriter(output, true);
+
+            while (guess < 0) {
+                if ((System.currentTimeMillis() - startTime) > ServerController.MAX_GUESS_TIMEOUT) {
+                    writer.println("1");
+                    writer.println("Timeout");
+                    break;
+                }
+                writer.println("0");
+
+                String line = reader.readLine();
+                try {
+                    guess = Integer.parseInt(line);
+                } catch (NumberFormatException e) {
+                    writer.println("1");
+                    writer.println("Invalid number");
+                    continue;
+                }
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Server exception: " + ex.getMessage());
+            ex.printStackTrace();
         }
- 
-        } catch (IOException ex) {
+
+        return guess;
+    }
+
+    public static void sendResult(Socket socket, String result) {
+        try {
+            OutputStream output = socket.getOutputStream();
+            PrintWriter writer = new PrintWriter(output, true);
+
+            writer.println("2");
+            writer.println(result);
+            writer.println("2");
+        } catch (Exception ex) {
             System.out.println("Server exception: " + ex.getMessage());
             ex.printStackTrace();
         }

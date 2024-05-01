@@ -7,12 +7,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
 
 public class UserDB {
     private String header;
     private HashMap<String, List<String>> users = new HashMap<>();
-    private final ReentrantLock lock = new ReentrantLock();
+    private Lock lock;
+
+    public UserDB(Lock lock) {
+        this.lock = lock;
+    }
 
     public void loadDB() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("users.csv"));
@@ -76,6 +80,24 @@ public class UserDB {
             leaderboard.sort((a, b) -> b.getValue() - a.getValue());
     
             return leaderboard;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int getElo(String username) {
+        lock.lock();
+        try {
+            return Integer.parseInt(users.get(username).get(1));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void updateElo(String username, int elo) {
+        lock.lock();
+        try {
+            users.get(username).set(1, Integer.toString(elo));
         } finally {
             lock.unlock();
         }
