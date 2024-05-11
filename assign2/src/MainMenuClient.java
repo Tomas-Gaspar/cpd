@@ -17,13 +17,16 @@ public class MainMenuClient {
         PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+        System.out.println("\n=================================");
+        System.out.println("|           Main Menu           |");
+        System.out.println("=================================\n");
         String welcomeMessage = reader.readLine();
-        System.out.println(welcomeMessage);
+        System.out.println(welcomeMessage + '\n');
         while (true) {
-            System.out.println("Please select an option:");
-            System.out.println("1. Play");
-            System.out.println("2. Leaderboard");
-            System.out.println("3. Quit");
+            System.out.println("[1] Play");
+            System.out.println("[2] Leaderboard");
+            System.out.println("[3] Quit");
+            System.out.print(">> ");
 
             String option = sc.nextLine();
             writer.println(option);
@@ -31,7 +34,7 @@ public class MainMenuClient {
             String response = reader.readLine();
             switch (response) {
                 case "0":
-                    System.out.println("Entering Queue...");
+                    System.out.println("\nEntering Queue...");
                     return 0;
                 case "1":
                     String line;

@@ -14,7 +14,9 @@ public class AuthClient {
     }
 
     public void login() throws IOException {
-        System.out.println("Login");
+        System.out.println("\n=================================");
+        System.out.println("|             Login             |");
+        System.out.println("=================================\n");
 
         while (true) {
             System.out.print("Username: ");
@@ -29,7 +31,7 @@ public class AuthClient {
 
             switch (response) {
                 case "0":
-                    System.out.println("Login successful");
+                    System.out.println("Login successful!");
                     return;
                 case "1":
                     System.out.println("Invalid credentials");
@@ -41,7 +43,9 @@ public class AuthClient {
     }
 
     public void register() throws IOException {
-        System.out.println("Register");
+        System.out.println("\n=================================");
+        System.out.println("|           Register            |");
+        System.out.println("=================================\n");
 
         while (true) {
             System.out.print("Username: ");
@@ -81,9 +85,12 @@ public class AuthClient {
         writer = new PrintWriter(socket.getOutputStream(), true);
 
         while (true) {
-            System.out.println("Select an option:");
-            System.out.println("1 - Login");
-            System.out.println("2 - Register");
+            System.out.println("\n=================================");
+            System.out.println("|            Welcome            |");
+            System.out.println("=================================\n");
+            System.out.println("[1] Login");
+            System.out.println("[2] Register");
+            System.out.print(">> ");
 
             String option = sc.nextLine();
             writer.println(option);
