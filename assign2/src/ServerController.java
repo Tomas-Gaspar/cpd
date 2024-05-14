@@ -22,7 +22,7 @@ public class ServerController {
         userDB.loadDB();
 
 
-        MatchmakingServer matchmakingServer = new MatchmakingServer(lock);
+        MatchmakingServer matchmakingServer = new MatchmakingServer(lock, userDB);
         matchmakingServer.startMatchmaking();
 
         ServerSocket serverSocket = new ServerSocket(port);
@@ -92,6 +92,8 @@ public class ServerController {
 
                                 String result = gameServer.getResult(clientId);
                                 GameServer.sendResult(socket, result);
+
+                                matchmakingServer.endGame(clientId);
 
                                 break;
                             case QUIT:

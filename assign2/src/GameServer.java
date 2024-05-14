@@ -53,7 +53,7 @@ public class GameServer {
             }
 
             if (clientPos != null)
-                output += "\nYour place: " + clientPos+1 + "\n";
+                output += "\nYour place: " + (clientPos+1) + "\n";
             output += "Correct number: " + number + "\n";
         } finally {
             lock.unlock();
@@ -144,5 +144,23 @@ public class GameServer {
             System.out.println("Server exception: " + ex.getMessage());
             ex.printStackTrace();
         }
+    }
+
+    public static int expectedScore(int averageScore, int currentScore){
+        return (int) Math.round(1 / (1 + Math.pow(10, (averageScore - currentScore) / 400)));
+    }
+
+    public static int calculateScore(int currentScore, int expectedScore, int actualScore, int numPlayers){
+        int k = getK(currentScore);
+        return Math.min(3000, currentScore + (k/numPlayers) * (actualScore - expectedScore));
+    }
+    
+    public static int getK(int currentScore){
+        if (currentScore < 2100)
+            return 32;
+        else if (currentScore < 2400)
+            return 24;
+        else
+            return 16;
     }
 }
