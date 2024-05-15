@@ -1,7 +1,14 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -59,14 +66,36 @@ public class ServerController {
                                 matchmakingServer.addToQueue(clientId, socket, matchMakingCondition, gameCondition);
                                 lock.lock();
                                 try {
+                                    InputStream input = socket.getInputStream();
+                                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                                    OutputStream output = socket.getOutputStream();
+                                    PrintWriter writer = new PrintWriter(output, true);
+
+                                    socket.setSoTimeout(2000);
                                     while (matchmakingServer.getPlayerGame(clientId) == null) {
                                         try {
                                             // wait to find a match
-                                            matchMakingCondition.await();
+                                            matchMakingCondition.await(1, TimeUnit.SECONDS);
+
+                                            writer.println("HEARTBEAT");
+                                            String line = reader.readLine();
+                                            if (!line.equals("HEARTBEAT")){
+                                                matchmakingServer.connectionLost(clientId);
+                                                return;
+                                            }
+                                            
+                                        } catch (SocketTimeoutException e) {
+                                            matchmakingServer.connectionLost(clientId);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
                                     }
+                                    socket.setSoTimeout(0);
+
+                                    writer.println("MATCHED");
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 } finally {
                                     lock.unlock();
                                 }

@@ -97,7 +97,7 @@ public class GameServer {
     }
 
     public static int getGuess(Socket socket) {
-        int guess = -1;
+        Integer guess = null;
         long startTime = System.currentTimeMillis();
 
         try {
@@ -106,7 +106,7 @@ public class GameServer {
             OutputStream output = socket.getOutputStream();
             PrintWriter writer = new PrintWriter(output, true);
 
-            while (guess < 0) {
+            while (guess == null) {
                 if ((System.currentTimeMillis() - startTime) > ServerController.MAX_GUESS_TIMEOUT) {
                     writer.println("1");
                     writer.println("Timeout");

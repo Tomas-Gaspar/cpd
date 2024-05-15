@@ -20,6 +20,8 @@ public class ClientController {
                 int response = mainMenuClient.start();
     
                 if (response == 0) {
+                    handleHeartbeat(socket);
+
                     gameClient.start();
                 } else if (response == 2) {
                     return;
@@ -34,5 +36,21 @@ public class ClientController {
  
             System.out.println("I/O error: " + ex.getMessage());
         }
+    }
+
+    public static void handleHeartbeat(Socket socket) throws IOException {
+            InputStream input = socket.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            OutputStream output = socket.getOutputStream();
+            PrintWriter writer = new PrintWriter(output, true);
+
+            while (true) {
+                String line = reader.readLine();
+                if (line.equals("HEARTBEAT")) {
+                    writer.println("HEARTBEAT");
+                } else if (line.equals("MATCHED")) {
+                    return;
+                }
+            }
     }
 }

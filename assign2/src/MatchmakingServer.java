@@ -82,6 +82,11 @@ public class MatchmakingServer {
                         try {
                             // cluster players by elo
                             for (ClientInfo client : matchmakingQueue) {
+                                // Connection to client has been lost. 
+                                // Leave them in the queue for the case that they reconnect but don't put them into a game.
+                                if (client.getSocket() == null)
+                                    continue;
+
                                 int cluster = Math.min(userDB.getElo(client.getClientId()) / (MAX_ELO / ELO_DIVISIONS), ELO_DIVISIONS - 1);
     
                                 if (clusterTolerance == 0) {
@@ -213,6 +218,21 @@ public class MatchmakingServer {
             lock.unlock();
         }
     }
+
+    public void connectionLost(String clientId) {
+        System.out.println("Connection lost for " + clientId);
+        lock.lock();
+        try {
+            for (ClientInfo client : matchmakingQueue) {
+                if (client.getClientId().equals(clientId)) {
+                    client.invalidateSocket();
+                    return;
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 }
 
 class ClientInfo {
@@ -248,5 +268,9 @@ class ClientInfo {
 
     public LocalDateTime getEntryTime() {
         return entryTime;
+    }
+
+    public void invalidateSocket() {
+        socket = null;
     }
 }
