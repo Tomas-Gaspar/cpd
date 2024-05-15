@@ -79,7 +79,7 @@ public class ServerController {
 
                                             writer.println("HEARTBEAT");
                                             String line = reader.readLine();
-                                            if (!line.equals("HEARTBEAT")){
+                                            if (line == null || !line.equals("HEARTBEAT")){
                                                 matchmakingServer.connectionLost(clientId);
                                                 return;
                                             }

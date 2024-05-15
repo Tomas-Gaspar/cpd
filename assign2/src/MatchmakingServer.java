@@ -48,19 +48,24 @@ public class MatchmakingServer {
             public void run() {
                 while (true) {
 
+                    boolean minPlayers = false;
                     lock.lock();
                     try {
                         if (matchmakingQueue.size() < MIN_PLAYERS) {
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            continue;
+                            minPlayers = true;
                         }
                     }
                     finally {
                         lock.unlock();
+                    }
+
+                    if (minPlayers) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        continue;
                     }
                     
                     List<Condition> matchmakingConditions = new ArrayList<>(), gameConditions = new ArrayList<>();
