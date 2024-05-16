@@ -1,5 +1,4 @@
 import java.io.*;
-import java.net.*;
 import java.util.Scanner;
 
 public class AuthClient {
@@ -7,10 +6,9 @@ public class AuthClient {
     private BufferedReader reader;
     private PrintWriter writer;
 
-    private Socket socket;
-
-    public AuthClient(Socket socket) {
-        this.socket = socket;
+    public AuthClient(BufferedReader reader, PrintWriter writer) {
+        this.reader = reader;
+        this.writer = writer;
     }
 
     public void login() throws IOException {
@@ -81,8 +79,6 @@ public class AuthClient {
 
     public void start() throws IOException {
         sc = new Scanner(System.in);
-        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        writer = new PrintWriter(socket.getOutputStream(), true);
 
         while (true) {
             System.out.println("\n=================================");

@@ -1,15 +1,13 @@
 import java.io.*;
-import java.net.*;
 
 public class AuthServer {
     private BufferedReader reader;
     private PrintWriter writer;
-
-    private Socket socket;
     private UserDB userDB;
 
-    public AuthServer(Socket socket, UserDB userDB) {
-        this.socket = socket;
+    public AuthServer(BufferedReader reader, PrintWriter writer, UserDB userDB) {
+        this.reader = reader;
+        this.writer = writer;
         this.userDB = userDB;
     }
 
@@ -57,9 +55,6 @@ public class AuthServer {
 
     public String start() {
         try {
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            writer = new PrintWriter(socket.getOutputStream(), true);
-
             while (true) {
                 String option = reader.readLine();
                 switch (option) {

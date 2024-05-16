@@ -1,18 +1,17 @@
-import java.net.*;
 import java.io.*;
 import java.util.Scanner;
 
 public class GameClient {
-    private Socket socket;
+    private BufferedReader reader;
+    private PrintWriter writer;
 
-    public GameClient(Socket socket) {
-        this.socket = socket;
+    public GameClient(BufferedReader reader, PrintWriter writer) {
+        this.reader = reader;
+        this.writer = writer;
     }
 
     public void start() throws IOException {
         Scanner sc = new Scanner(System.in);
-        PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         while (true) {
             String response = reader.readLine();

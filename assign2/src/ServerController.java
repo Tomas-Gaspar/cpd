@@ -1,8 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -53,10 +51,20 @@ public class ServerController {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    AuthServer authServer = new AuthServer(socket, userDB);
+                    BufferedReader reader;
+                    PrintWriter writer;
+                    try {
+                        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        writer = new PrintWriter(socket.getOutputStream(), true);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+
+                    AuthServer authServer = new AuthServer(reader, writer, userDB);
                     String clientId = authServer.start();
 
-                    MainMenuServer mainMenuServer = new MainMenuServer(socket, userDB, clientId);
+                    MainMenuServer mainMenuServer = new MainMenuServer(reader, writer, userDB, clientId);
 
                     while (true) {                        
                         MainMenuOption option = mainMenuServer.start();
@@ -66,11 +74,6 @@ public class ServerController {
                                 matchmakingServer.addToQueue(clientId, socket, matchMakingCondition, gameCondition);
                                 lock.lock();
                                 try {
-                                    InputStream input = socket.getInputStream();
-                                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                                    OutputStream output = socket.getOutputStream();
-                                    PrintWriter writer = new PrintWriter(output, true);
-
                                     socket.setSoTimeout(2000);
                                     while (matchmakingServer.getPlayerGame(clientId) == null) {
                                         try {
@@ -102,7 +105,7 @@ public class ServerController {
 
                                 GameServer gameServer = matchmakingServer.getPlayerGame(clientId);
 
-                                int guess = GameServer.getGuess(socket);
+                                int guess = GameServer.getGuess(reader, writer);
                                 gameServer.addGuess(clientId, guess);
 
                                 lock.lock();
@@ -120,7 +123,7 @@ public class ServerController {
                                 }
 
                                 String result = gameServer.getResult(clientId);
-                                GameServer.sendResult(socket, result);
+                                GameServer.sendResult(writer, result);
 
                                 matchmakingServer.endGame(clientId);
 
@@ -128,6 +131,8 @@ public class ServerController {
                             case QUIT:
                                 try {
                                     socket.close();
+                                    reader.close();
+                                    writer.close();
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }

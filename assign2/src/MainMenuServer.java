@@ -1,25 +1,21 @@
-import java.net.*;
 import java.util.List;
 import java.io.*;
 
 public class MainMenuServer {
-    private Socket socket;
+    private BufferedReader reader;
+    private PrintWriter writer;
     private UserDB userDB;
     private String clientId;
 
-    public MainMenuServer(Socket socket, UserDB userDB, String clientId) {
-        this.socket = socket;
+    public MainMenuServer(BufferedReader reader, PrintWriter writer, UserDB userDB, String clientId) {
+        this.reader = reader;
+        this.writer = writer;
         this.userDB = userDB;
         this.clientId = clientId;
     }
 
     public ServerController.MainMenuOption start() {
         try {
-            InputStream input = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
-
             writer.println("Welcome to the Main Menu, " + clientId + "!");
             while (true) {
                 String option = reader.readLine();

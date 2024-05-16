@@ -1,9 +1,5 @@
 import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,15 +92,11 @@ public class GameServer {
         }).start();
     }
 
-    public static int getGuess(Socket socket) {
+    public static int getGuess(BufferedReader reader, PrintWriter writer) {
         Integer guess = null;
         long startTime = System.currentTimeMillis();
 
         try {
-            InputStream input = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
 
             while (guess == null) {
                 if ((System.currentTimeMillis() - startTime) > ServerController.MAX_GUESS_TIMEOUT) {
@@ -132,10 +124,8 @@ public class GameServer {
         return guess;
     }
 
-    public static void sendResult(Socket socket, String result) {
+    public static void sendResult(PrintWriter writer, String result) {
         try {
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
 
             writer.println("2");
             writer.println(result);

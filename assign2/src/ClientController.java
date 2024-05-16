@@ -9,12 +9,14 @@ public class ClientController {
         int port = Integer.parseInt(args[1]);
  
         try (Socket socket = new Socket(hostname, port)) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 
-            AuthClient authClient = new AuthClient(socket);
+            AuthClient authClient = new AuthClient(reader, writer);
             authClient.start();
 
-            MainMenuClient mainMenuClient = new MainMenuClient(socket);
-            GameClient gameClient = new GameClient(socket);
+            MainMenuClient mainMenuClient = new MainMenuClient(reader, writer);
+            GameClient gameClient = new GameClient(reader, writer);
 
             while (true) {
                 int response = mainMenuClient.start();
