@@ -22,21 +22,24 @@ public class MainMenuServer {
                 switch (option) {
                     case "1":
                         writer.println("0");
-                        return ServerController.MainMenuOption.MATCHMAKING;
+                        return ServerController.MainMenuOption.UNRANKED;
                     case "2":
                         writer.println("1");
+                        return ServerController.MainMenuOption.RANKED;
+                    case "3":
+                        writer.println("2");
                         List<Pair<String,Integer>> leaderboard = userDB.getLeaderboard();
                         writer.format("%-20s %s\n", "Username", "Score");
                         for (Pair<String,Integer> entry : leaderboard) {
                             writer.format("%-20s %d\n", entry.getKey(), entry.getValue());
                         }
-                        writer.println("1");
-                        break;
-                    case "3":
                         writer.println("2");
+                        break;
+                    case "4":
+                        writer.println("3");
                         return ServerController.MainMenuOption.QUIT;
                     default:
-                        writer.println("3");
+                        writer.println("4");
                         break;
                 }
             }

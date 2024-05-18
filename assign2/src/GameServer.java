@@ -14,11 +14,13 @@ public class GameServer {
     private Map<String, Integer> guesses = new HashMap<>();
     private List<Pair<String, Integer>> results = new ArrayList<>();
     private Lock lock;
+    private boolean ranked;
 
-    public GameServer(List<Condition> conditions, Lock lock) {
+    public GameServer(List<Condition> conditions, Lock lock, boolean ranked) {
         this.number = ServerController.getRandomNumber();
         this.conditions = conditions;
         this.lock = lock;
+        this.ranked = ranked;
     }
 
     public void addGuess(String clientId, Integer guess) {
@@ -80,7 +82,9 @@ public class GameServer {
                         results.add(new Pair<>(entry.getKey(), entry.getValue()));
                     results.sort((a, b) -> Math.abs(a.getValue() - number) - Math.abs(b.getValue() - number));
 
-                    // TODO update elo
+                    if (ranked) {
+                        // TODO update elo
+                    }
     
                     for (Condition condition : conditions)
                         condition.signal();

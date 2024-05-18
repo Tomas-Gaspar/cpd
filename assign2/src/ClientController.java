@@ -21,7 +21,7 @@ public class ClientController {
             while (true) {
                 int response = mainMenuClient.start();
     
-                if (response == 0) {
+                if (response == 0 || response == 1) {
                     handleHeartbeat(socket);
 
                     gameClient.start();

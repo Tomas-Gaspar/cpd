@@ -12,7 +12,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ServerController {
     public static enum MainMenuOption {
-        MATCHMAKING,
+        RANKED,
+        UNRANKED,
         QUIT
     }
 
@@ -69,9 +70,13 @@ public class ServerController {
                     while (true) {                        
                         MainMenuOption option = mainMenuServer.start();
                         switch (option) {
-                            case MATCHMAKING:
+                            case RANKED, UNRANKED:
                                 Condition matchMakingCondition = lock.newCondition(), gameCondition = lock.newCondition();
-                                matchmakingServer.addToQueue(clientId, socket, matchMakingCondition, gameCondition);
+                                if (option == MainMenuOption.RANKED) {
+                                    matchmakingServer.addToQueue(clientId, socket, matchMakingCondition, gameCondition);
+                                } else {
+                                    matchmakingServer.addToUnrankedQueue(clientId, socket, matchMakingCondition, gameCondition);
+                                }
                                 lock.lock();
                                 try {
                                     socket.setSoTimeout(2000);

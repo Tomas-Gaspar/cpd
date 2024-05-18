@@ -18,6 +18,7 @@ public class MatchmakingServer {
 
 
     private List<ClientInfo> matchmakingQueue = new ArrayList<>();
+    private List<ClientInfo> unrankedQueue = new ArrayList<>();
     private Map<String, GameServer> games = new HashMap<>();
     private Lock lock;
     private UserDB userDB;
@@ -42,12 +43,57 @@ public class MatchmakingServer {
         }
     }
 
+    public void addToUnrankedQueue(String clientId, Socket socket, Condition matchMakingCondition, Condition gameCondition) {
+        lock.lock();
+        try {
+            for (int i = 0; i < unrankedQueue.size(); i++) {
+                if (unrankedQueue.get(i).getClientId().equals(clientId)) {
+                    unrankedQueue.set(i, new ClientInfo(clientId, socket, matchMakingCondition, gameCondition, matchmakingQueue.get(i).getEntryTime()));
+                    return;
+                }
+            }
+            unrankedQueue.add(new ClientInfo(clientId, socket, matchMakingCondition, gameCondition, LocalDateTime.now()));
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void startMatchmaking() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
+                    /*
+                     * UNRANKED MATCHMAKING
+                     */
+                    lock.lock();
+                    try {
+                        if (unrankedQueue.size() >= MAX_PLAYERS) {
+                            List<Condition> matchmakingConditions = new ArrayList<>(), gameConditions = new ArrayList<>();
+                            List<String> players = new ArrayList<>();
+                            for (int i = 0; i < MAX_PLAYERS; i++) {
+                                ClientInfo client = unrankedQueue.remove(0);
+                                matchmakingConditions.add(client.getMatchMakingCondition());
+                                gameConditions.add(client.getGameCondition());
+                                players.add(client.getClientId());
+                            }
 
+                            GameServer game = new GameServer(gameConditions, lock, false);
+                            for (String clientId : players)
+                                games.put(clientId, game);
+                            game.startGame();
+
+                            for (Condition condition : matchmakingConditions)
+                                condition.signal();
+                        }
+                    } finally {
+                        lock.unlock();
+                    } 
+
+
+                    /*
+                     * RANKED MATCHMAKING
+                     */
                     boolean minPlayers = false;
                     lock.lock();
                     try {
@@ -140,7 +186,7 @@ public class MatchmakingServer {
 
                                     lock.lock();
                                     try {
-                                        GameServer game = new GameServer(gameConditions, lock);
+                                        GameServer game = new GameServer(gameConditions, lock, true);
                                         for (ClientInfo client : players) {
                                             matchmakingQueue.remove(client);
                                             games.put(client.getClientId(), game);
@@ -176,7 +222,7 @@ public class MatchmakingServer {
 
                                         lock.lock();
                                         try {
-                                            GameServer game = new GameServer(gameConditions, lock);
+                                            GameServer game = new GameServer(gameConditions, lock, true);
                                             for (ClientInfo client : players) {
                                                 matchmakingQueue.remove(client);
                                                 games.put(client.getClientId(), game);
