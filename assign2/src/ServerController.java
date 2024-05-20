@@ -6,7 +6,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -93,8 +92,7 @@ public class ServerController {
                                     while (matchmakingServer.getPlayerGame(clientId) == null) {
                                         try {
                                             // wait to find a match
-                                            matchMakingCondition.await(1, TimeUnit.SECONDS);
-
+                                            matchMakingCondition.awaitNanos(1000000000);
                                             writer.println("HEARTBEAT");
                                             String line = reader.readLine();
                                             if (line == null || !line.equals("HEARTBEAT")){
