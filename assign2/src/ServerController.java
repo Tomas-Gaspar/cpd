@@ -73,9 +73,19 @@ public class ServerController {
                             case RANKED, UNRANKED:
                                 Condition matchMakingCondition = lock.newCondition(), gameCondition = lock.newCondition();
                                 if (option == MainMenuOption.RANKED) {
-                                    matchmakingServer.addToQueue(clientId, socket, matchMakingCondition, gameCondition);
+                                    if (matchmakingServer.addToQueue(clientId, socket, matchMakingCondition, gameCondition)) {
+                                        writer.println("0");
+                                    } else {
+                                        writer.println("1");
+                                        continue;
+                                    }
                                 } else {
-                                    matchmakingServer.addToUnrankedQueue(clientId, socket, matchMakingCondition, gameCondition);
+                                    if (matchmakingServer.addToUnrankedQueue(clientId, socket, matchMakingCondition, gameCondition)) {
+                                        writer.println("0");
+                                    } else {
+                                        writer.println("1");
+                                        continue;
+                                    }
                                 }
                                 lock.lock();
                                 try {

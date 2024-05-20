@@ -34,10 +34,22 @@ public class MainMenuClient {
             switch (response) {
                 case "0":
                     System.out.println("\nEntering Unranked Queue...");
-                    return 0;
+                    response = reader.readLine();
+                    if (response.equals("0")) {
+                        return 0;
+                    } else if (response.equals("1")) {
+                        System.out.println("ERROR: It looks like this account is already in a queue.\n");
+                        return 2;
+                    }
                 case "1":
                     System.out.println("\nEntering Ranked Queue...");
-                    return 1;
+                    response = reader.readLine();
+                    if (response.equals("0")) {
+                        return 1;
+                    } else if (response.equals("1")) {
+                        System.out.println("ERROR: It looks like this account is already in a queue.\n");
+                        return 2;
+                    }
                 case "2":
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -48,7 +60,7 @@ public class MainMenuClient {
                     break;
                 case "3":
                     System.out.println("Quitting...");
-                    return 2;
+                    return 3;
                 case "4":
                     System.out.println("Invalid option");
                     break;

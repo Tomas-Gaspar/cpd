@@ -28,34 +28,54 @@ public class MatchmakingServer {
         this.userDB = userDB;
     }
 
-    public void addToQueue(String clientId, Socket socket, Condition matchMakingCondition, Condition gameCondition) {
+    public boolean addToQueue(String clientId, Socket socket, Condition matchMakingCondition, Condition gameCondition) {
         lock.lock();
         try {
+            for (int i = 0; i < unrankedQueue.size(); i++) {
+                if (unrankedQueue.get(i).getClientId().equals(clientId)) {
+                    if (unrankedQueue.get(i).getSocket() != null)
+                        return false;
+                }
+            }
+
             for (int i = 0; i < matchmakingQueue.size(); i++) {
                 if (matchmakingQueue.get(i).getClientId().equals(clientId)) {
+                    if (matchmakingQueue.get(i).getSocket() != null)
+                        return false;
                     matchmakingQueue.set(i, new ClientInfo(clientId, socket, matchMakingCondition, gameCondition, matchmakingQueue.get(i).getEntryTime()));
-                    return;
+                    return true;
                 }
             }
             matchmakingQueue.add(new ClientInfo(clientId, socket, matchMakingCondition, gameCondition, LocalDateTime.now()));
         } finally {
             lock.unlock();
         }
+        return true;
     }
 
-    public void addToUnrankedQueue(String clientId, Socket socket, Condition matchMakingCondition, Condition gameCondition) {
+    public boolean addToUnrankedQueue(String clientId, Socket socket, Condition matchMakingCondition, Condition gameCondition) {
         lock.lock();
         try {
+            for (int i = 0; i < matchmakingQueue.size(); i++) {
+                if (matchmakingQueue.get(i).getClientId().equals(clientId)) {
+                    if (matchmakingQueue.get(i).getSocket() != null)
+                        return false;
+                }
+            }
+
             for (int i = 0; i < unrankedQueue.size(); i++) {
                 if (unrankedQueue.get(i).getClientId().equals(clientId)) {
-                    unrankedQueue.set(i, new ClientInfo(clientId, socket, matchMakingCondition, gameCondition, matchmakingQueue.get(i).getEntryTime()));
-                    return;
+                    if (unrankedQueue.get(i).getSocket() != null)
+                        return false;
+                    unrankedQueue.set(i, new ClientInfo(clientId, socket, matchMakingCondition, gameCondition, unrankedQueue.get(i).getEntryTime()));
+                    return true;
                 }
             }
             unrankedQueue.add(new ClientInfo(clientId, socket, matchMakingCondition, gameCondition, LocalDateTime.now()));
         } finally {
             lock.unlock();
         }
+        return true;
     }
 
     public void startMatchmaking() {
@@ -275,6 +295,13 @@ public class MatchmakingServer {
         lock.lock();
         try {
             for (ClientInfo client : matchmakingQueue) {
+                if (client.getClientId().equals(clientId)) {
+                    client.invalidateSocket();
+                    return;
+                }
+            }
+
+            for (ClientInfo client : unrankedQueue) {
                 if (client.getClientId().equals(clientId)) {
                     client.invalidateSocket();
                     return;

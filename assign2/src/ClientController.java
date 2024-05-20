@@ -26,6 +26,8 @@ public class ClientController {
 
                     gameClient.start();
                 } else if (response == 2) {
+                    continue;
+                } else if (response == 3) {
                     return;
                 }
             }
