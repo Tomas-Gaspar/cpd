@@ -14,12 +14,14 @@ public class GameServer {
     private Map<String, Integer> guesses = new HashMap<>();
     private List<Pair<String, Integer>> results = new ArrayList<>();
     private Lock lock;
+    private UserDB userDB;
     private boolean ranked;
 
-    public GameServer(List<Condition> conditions, Lock lock, boolean ranked) {
+    public GameServer(List<Condition> conditions, Lock lock, UserDB userDB, boolean ranked) {
         this.number = ServerController.getRandomNumber();
         this.conditions = conditions;
         this.lock = lock;
+        this.userDB = userDB;
         this.ranked = ranked;
     }
 
@@ -78,12 +80,21 @@ public class GameServer {
                 try {
                     awaitingGuesses = false;
 
-                    for (var entry : guesses.entrySet())
+                    double averageLobbyElo = 0;
+                    for (var entry : guesses.entrySet()) {
                         results.add(new Pair<>(entry.getKey(), entry.getValue()));
+                        averageLobbyElo += userDB.getElo(entry.getKey());
+                    }
                     results.sort((a, b) -> Math.abs(a.getValue() - number) - Math.abs(b.getValue() - number));
+                    averageLobbyElo /= guesses.size();
 
                     if (ranked) {
-                        // TODO update elo
+                        for (int i = 0; i < results.size(); i++) {
+                            int currentPlayerElo = userDB.getElo(results.get(i).getKey());
+                            double expectedPlacement = expectedPlacement(averageLobbyElo, currentPlayerElo);
+                            int newElo = calculateElo(currentPlayerElo, expectedPlacement, i+1, results.size());
+                            userDB.updateElo(results.get(i).getKey(), newElo);
+                        }
                     }
     
                     for (Condition condition : conditions)
@@ -140,19 +151,20 @@ public class GameServer {
         }
     }
 
-    public static int expectedScore(int averageScore, int currentScore){
-        return (int) Math.round(1 / (1 + Math.pow(10, (averageScore - currentScore) / 400)));
+    public static double expectedPlacement(double averageLobbyElo, int currentPlayerElo){
+        return 1 / (1 + Math.pow(10, (averageLobbyElo - currentPlayerElo) / 400));
     }
 
-    public static int calculateScore(int currentScore, int expectedScore, int actualScore, int numPlayers){
-        int k = getK(currentScore);
-        return Math.min(3000, currentScore + (k/numPlayers) * (actualScore - expectedScore));
+    public static int calculateElo(int currentPlayerElo, double expectedPlacement, int position, int numPlayers){
+        double actualPlacement = 1 - (double)(position - 1) / (numPlayers - 1);
+        int k = getK(currentPlayerElo);
+        return Math.max(0, Math.min(3000, (int) Math.round(currentPlayerElo + (k/numPlayers) * (actualPlacement - expectedPlacement))));
     }
     
-    public static int getK(int currentScore){
-        if (currentScore < 2100)
+    public static int getK(int currentPlayerElo){
+        if (currentPlayerElo < 2100)
             return 32;
-        else if (currentScore < 2400)
+        else if (currentPlayerElo < 2400)
             return 24;
         else
             return 16;

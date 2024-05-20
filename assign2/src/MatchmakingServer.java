@@ -14,7 +14,7 @@ public class MatchmakingServer {
     private static final int WAITING_THRESHOLD = 30;
     private static final int WAITING_TOLERANCE = 5;
     private static final int MAX_ELO = 100;
-    private static final int ELO_DIVISIONS = 5;
+    private static final int ELO_DIVISIONS = 6;
 
 
     private List<ClientInfo> matchmakingQueue = new ArrayList<>();
@@ -78,7 +78,7 @@ public class MatchmakingServer {
                                 players.add(client.getClientId());
                             }
 
-                            GameServer game = new GameServer(gameConditions, lock, false);
+                            GameServer game = new GameServer(gameConditions, lock, userDB, false);
                             for (String clientId : players)
                                 games.put(clientId, game);
                             game.startGame();
@@ -186,7 +186,7 @@ public class MatchmakingServer {
 
                                     lock.lock();
                                     try {
-                                        GameServer game = new GameServer(gameConditions, lock, true);
+                                        GameServer game = new GameServer(gameConditions, lock, userDB, true);
                                         for (ClientInfo client : players) {
                                             matchmakingQueue.remove(client);
                                             games.put(client.getClientId(), game);
@@ -222,7 +222,7 @@ public class MatchmakingServer {
 
                                         lock.lock();
                                         try {
-                                            GameServer game = new GameServer(gameConditions, lock, true);
+                                            GameServer game = new GameServer(gameConditions, lock, userDB, true);
                                             for (ClientInfo client : players) {
                                                 matchmakingQueue.remove(client);
                                                 games.put(client.getClientId(), game);

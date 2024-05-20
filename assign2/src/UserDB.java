@@ -61,7 +61,7 @@ public class UserDB {
             if (users.containsKey(username) || password.length() < 4 || !password.equals(passwordConfirm)) {
                 return false;
             } else {
-                users.put(username, Arrays.asList(password, "0"));
+                users.put(username, Arrays.asList(password, "1200"));
                 return true;
             }
         } finally {
