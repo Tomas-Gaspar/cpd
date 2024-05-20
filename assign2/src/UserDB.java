@@ -3,8 +3,13 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -49,7 +54,22 @@ public class UserDB {
     public boolean login(String username, String password) {
         lock.lock();
         try {
-            return users.containsKey(username) && users.get(username).get(0).equals(password);
+            if (!users.containsKey(username)) {
+                return false;
+            }
+
+            byte[] storedHashedPassword = Base64.getDecoder().decode(users.get(username).get(0));
+            byte[] storedSalt = Base64.getDecoder().decode(users.get(username).get(1));
+            byte[] hashedPassword;
+
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(storedSalt);
+            hashedPassword = md.digest(password.getBytes(StandardCharsets.UTF_8));
+
+            return Arrays.equals(storedHashedPassword, hashedPassword);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
         } finally {
             lock.unlock();
         }
@@ -61,7 +81,23 @@ public class UserDB {
             if (users.containsKey(username) || password.length() < 4 || !password.equals(passwordConfirm)) {
                 return false;
             } else {
-                users.put(username, Arrays.asList(password, "1200"));
+                SecureRandom random = new SecureRandom();
+                byte[] salt = new byte[16];
+                random.nextBytes(salt);
+                byte[] hashedPassword;
+
+                try {
+                    MessageDigest md = MessageDigest.getInstance("SHA-512");
+                    md.update(salt);
+                    hashedPassword = md.digest(password.getBytes(StandardCharsets.UTF_8));
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+                String hashedPasswordBase64 = Base64.getEncoder().encodeToString(hashedPassword);
+                String saltBase64 = Base64.getEncoder().encodeToString(salt);
+
+                users.put(username, Arrays.asList(hashedPasswordBase64, saltBase64, "1200"));
                 return true;
             }
         } finally {
@@ -74,7 +110,7 @@ public class UserDB {
         try {
             List<Pair<String, Integer>> leaderboard = new ArrayList<>();
             for (String username : users.keySet()) {
-                leaderboard.add(new Pair<>(username, Integer.parseInt(users.get(username).get(1))));
+                leaderboard.add(new Pair<>(username, Integer.parseInt(users.get(username).get(2))));
             }
     
             leaderboard.sort((a, b) -> b.getValue() - a.getValue());
@@ -88,7 +124,7 @@ public class UserDB {
     public int getElo(String username) {
         lock.lock();
         try {
-            return Integer.parseInt(users.get(username).get(1));
+            return Integer.parseInt(users.get(username).get(2));
         } finally {
             lock.unlock();
         }
@@ -97,7 +133,7 @@ public class UserDB {
     public void updateElo(String username, int elo) {
         lock.lock();
         try {
-            users.get(username).set(1, Integer.toString(elo));
+            users.get(username).set(2, Integer.toString(elo));
         } finally {
             lock.unlock();
         }

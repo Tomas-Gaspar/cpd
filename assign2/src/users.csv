@@ -1,4 +1,4 @@
-username,password,elo
-ze,1234,1200
-manel,1234,1200
-svip,2304,1200
+username,password,salt,elo
+ze,0jk0JJ8I251uwuzND9g+w1i1tagZmZnRSD8JVLAyc/M9M8fIuqYLrkI9ok5zorM0kW8hvacrDgz3rwt07JbEZA==,hMVuQghqduUvzWkgvsn78w==,1200
+manel,VV1B/QRjnfWY45q46DmRhMsb+S/1CuQ2ddNllYP3YO6Zq/Y7+EIh+2nLTYXcilHVg/V2XTXXLLUF2GxU6oHlhg==,DISB2ri2UUirPLkCCKTslg==,1200
+svip,QJOlM3Bv1WMhhmoOopp5wgkiZcmcDC0CQbILb9dC2tfreWftD0B4EObCMUL0PrEY2yNzi93gGqJrp6n4GqovtQ==,fLoic/iMS/9X+sNqm1HMUA==,1200

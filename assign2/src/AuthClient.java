@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class AuthClient {
@@ -16,14 +17,16 @@ public class AuthClient {
         System.out.println("|             Login             |");
         System.out.println("=================================\n");
 
+        Console console = System.console();
         while (true) {
             System.out.print("Username: ");
             String username = sc.nextLine();
             writer.println(username);
             
-            System.out.print("Password: ");
-            String password = sc.nextLine();
+            char[] passwordArray = console.readPassword("Password: ");
+            String password = new String(passwordArray);
             writer.println(password);
+            Arrays.fill(passwordArray, '0');
 
             String response = reader.readLine();
 
@@ -45,18 +48,21 @@ public class AuthClient {
         System.out.println("|           Register            |");
         System.out.println("=================================\n");
 
+        Console console = System.console();
         while (true) {
             System.out.print("Username: ");
             String username = sc.nextLine();
             writer.println(username);
             
-            System.out.print("Password: ");
-            String password = sc.nextLine();
+            char[] passwordArray = console.readPassword("Password: ");
+            String password = new String(passwordArray);
             writer.println(password);
+            Arrays.fill(passwordArray, '0');
 
-            System.out.print("Confirm password: ");
-            String passwordConfirm = sc.nextLine();
+            char[] passwordConfirmArray = console.readPassword("Confirm password: ");
+            String passwordConfirm = new String(passwordConfirmArray);
             writer.println(passwordConfirm);
+            Arrays.fill(passwordConfirmArray, '0');
 
             String response = reader.readLine();
 
