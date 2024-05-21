@@ -35,20 +35,24 @@ public class UserDB {
     }
 
     public void storeDB() throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("users.csv"));
-        writer.write(header + "\n");
-        for (String username : users.keySet()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(username);
-            for (int i = 0; i < users.get(username).size(); i++) {
-                sb.append(",");
-                sb.append(users.get(username).get(i));
+        lock.lock();
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("users.csv"));
+            writer.write(header + "\n");
+            for (String username : users.keySet()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(username);
+                for (int i = 0; i < users.get(username).size(); i++) {
+                    sb.append(",");
+                    sb.append(users.get(username).get(i));
+                }
+                sb.append("\n");
+                writer.write(sb.toString());
             }
-            sb.append("\n");
-            writer.write(sb.toString());
+            writer.close();
+        } finally {
+            lock.unlock();
         }
-        writer.close();
-
     }
 
     public boolean login(String username, String password) {

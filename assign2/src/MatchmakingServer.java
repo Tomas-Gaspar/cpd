@@ -79,7 +79,7 @@ public class MatchmakingServer {
     }
 
     public void startMatchmaking() {
-        new Thread(new Runnable() {
+        Thread.ofVirtual().start(new Runnable() {
             @Override
             public void run() {
                 while (true) {
@@ -269,7 +269,7 @@ public class MatchmakingServer {
                     }
                 }
             }
-        }).start();
+        });
     }
 
     public GameServer getPlayerGame(String clientId) {

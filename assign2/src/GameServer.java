@@ -63,7 +63,7 @@ public class GameServer {
     }
 
     public void startGame() {
-        new Thread(new Runnable() {
+        Thread.ofVirtual().start(new Runnable() {
             @Override
             public void run() {
                 long startTime = System.currentTimeMillis();
@@ -104,7 +104,7 @@ public class GameServer {
                 }
 
             }
-        }).start();
+        });
     }
 
     public static int getGuess(BufferedReader reader, PrintWriter writer) {

@@ -26,29 +26,28 @@ public class ServerController {
         UserDB userDB = new UserDB(lock);
         userDB.loadDB();
 
-
         MatchmakingServer matchmakingServer = new MatchmakingServer(lock, userDB);
         matchmakingServer.startMatchmaking();
 
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Server is listening on port " + port);
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                try {
-                    userDB.storeDB();
-                    serverSocket.close();
-                } catch (IOException e) {
-                    System.out.println("Error closing server.");
-                    e.printStackTrace();
-                }
+        Thread virtualThread = Thread.ofVirtual().factory().newThread(() -> {
+            try {
+                userDB.storeDB();
+                serverSocket.close();
+            } catch (IOException e) {
+                System.out.println("Error closing server.");
+                e.printStackTrace();
             }
         });
+        
+        Runtime.getRuntime().addShutdownHook(virtualThread);
 
         while (true) {
             Socket socket = serverSocket.accept();
 
-            new Thread(new Runnable() {
+            Thread.ofVirtual().start(new Runnable() {
                 @Override
                 public void run() {
                     BufferedReader reader;
@@ -155,7 +154,7 @@ public class ServerController {
                         }
                     }
                 }
-            }).start();
+            });
         }
     }
 
