@@ -13,8 +13,8 @@ public class MatchmakingServer {
     private static final int MAX_PLAYERS = 6;
     private static final int WAITING_THRESHOLD = 30;
     private static final int WAITING_TOLERANCE = 5;
-    private static final int MAX_ELO = 100;
-    private static final int ELO_DIVISIONS = 6;
+    private static final int MAX_ELO = 3000;
+    private static final int ELO_DIVISIONS = 300;
 
 
     private List<ClientInfo> matchmakingQueue = new ArrayList<>();

@@ -15,14 +15,21 @@ public class MainMenuClient {
     public int start() throws IOException {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("\n=================================");
-        System.out.println("|           Main Menu           |");
-        System.out.println("=================================\n");
-        String welcomeMessage = reader.readLine();
-        System.out.println(welcomeMessage + '\n');
+        boolean start = true;
+
         while (true) {
-            System.out.println("[1] Play Unranked");
-            System.out.println("[2] Play Ranked");
+            System.out.println("\n=================================");
+            System.out.println("|           Main Menu           |");
+            System.out.println("=================================\n");
+
+            if (start){
+                String welcomeMessage = reader.readLine();
+                System.out.println(welcomeMessage + '\n');
+                start = false;
+            }
+            
+            System.out.println("[1] Simple Game");
+            System.out.println("[2] Ranked Game");
             System.out.println("[3] Leaderboard");
             System.out.println("[4] Quit");
             System.out.print(">> ");
@@ -33,7 +40,7 @@ public class MainMenuClient {
             String response = reader.readLine();
             switch (response) {
                 case "0":
-                    System.out.println("\nEntering Unranked Queue...");
+                    System.out.println("\nEntering Simple Game Queue...\n");
                     response = reader.readLine();
                     if (response.equals("0")) {
                         return 0;
@@ -42,7 +49,7 @@ public class MainMenuClient {
                         return 2;
                     }
                 case "1":
-                    System.out.println("\nEntering Ranked Queue...");
+                    System.out.println("\nEntering Ranked Game Queue...\n");
                     response = reader.readLine();
                     if (response.equals("0")) {
                         return 1;
@@ -51,12 +58,18 @@ public class MainMenuClient {
                         return 2;
                     }
                 case "2":
+                    System.out.println("\n=================================");
+                    System.out.println("|          Leaderboard          |");
+                    System.out.println("=================================\n");
                     String line;
                     while ((line = reader.readLine()) != null) {
                         if (line.equals("2"))
                             break;
                         System.out.println(line);
                     }
+                    System.out.println();
+
+                    // TODO add a way to go back to main menu
                     break;
                 case "3":
                     System.out.println("Quitting...");

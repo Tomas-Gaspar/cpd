@@ -30,6 +30,7 @@ public class MainMenuServer {
                         writer.println("2");
                         List<Pair<String,Integer>> leaderboard = userDB.getLeaderboard();
                         writer.format("%-20s %s\n", "Username", "Score");
+                        writer.println("-".repeat(26));;
                         for (Pair<String,Integer> entry : leaderboard) {
                             writer.format("%-20s %d\n", entry.getKey(), entry.getValue());
                         }
