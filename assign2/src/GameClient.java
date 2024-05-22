@@ -13,6 +13,10 @@ public class GameClient {
     public void start() throws IOException {
         Scanner sc = new Scanner(System.in);
 
+        System.out.println("\n=================================");
+        System.out.println("|              Game             |");
+        System.out.println("=================================\n");
+
         while (true) {
             String response = reader.readLine();
 
@@ -23,10 +27,12 @@ public class GameClient {
                     writer.println(num);
                     break;
                 case "1":
+                    System.out.println("Error 1");
                     String errorMessage = reader.readLine();
                     System.out.println(errorMessage);
                     break;
                 case "2":
+                    System.out.println("Error 2");
                     while (true) {
                         String line = reader.readLine();
                         if (line.equals("2")) {
@@ -36,6 +42,7 @@ public class GameClient {
                     }
             
                 default:
+                    System.out.println("Invalid option");
                     break;
             }
         }
