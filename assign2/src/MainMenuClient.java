@@ -69,7 +69,6 @@ public class MainMenuClient {
                     }
                     System.out.println();
 
-                    // TODO add a way to go back to main menu
                     break;
                 case "3":
                     System.out.println("Quitting...");

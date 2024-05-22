@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
 import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +51,12 @@ public class GameServer {
                     clientPos = i;
                 }
 
-                output += String.format("%d. %-20s %s%n", i+1, results.get(i).getKey(), results.get(i).getValue());
+                Integer score = results.get(i).getValue();
+                String scoreS;
+                if (score == null) scoreS = "No guess";
+                else scoreS = Integer.toString(score);
+
+                output += String.format("%d. %-20s %s%n", i+1, results.get(i).getKey(), scoreS);
             }
 
             if (clientPos != null)
@@ -85,7 +92,15 @@ public class GameServer {
                         results.add(new Pair<>(entry.getKey(), entry.getValue()));
                         averageLobbyElo += userDB.getElo(entry.getKey());
                     }
-                    results.sort((a, b) -> Math.abs(a.getValue() - number) - Math.abs(b.getValue() - number));
+                    results.sort((a, b) -> {
+                        if (a.getValue() == null && b.getValue() == null)
+                            return 0;
+                        else if (a.getValue() == null)
+                            return 1;
+                        else if (b.getValue() == null)
+                            return -1;
+                        else return Math.abs(a.getValue() - number) - Math.abs(b.getValue() - number);
+                    });
                     averageLobbyElo /= guesses.size();
 
                     if (ranked) {
@@ -107,21 +122,30 @@ public class GameServer {
         });
     }
 
-    public static int getGuess(BufferedReader reader, PrintWriter writer) {
+    public static Integer getGuess(Socket socket, BufferedReader reader, PrintWriter writer) {
         Integer guess = null;
         long startTime = System.currentTimeMillis();
 
         try {
 
             while (guess == null) {
-                if ((System.currentTimeMillis() - startTime) > ServerController.MAX_GUESS_TIMEOUT) {
+                int time = (int) (System.currentTimeMillis() - startTime);
+                if (time > ServerController.MAX_GUESS_TIMEOUT) {
                     writer.println("1");
                     writer.println("Timeout");
                     break;
                 }
                 writer.println("0");
 
-                String line = reader.readLine();
+                socket.setSoTimeout(ServerController.MAX_GUESS_TIMEOUT - time);
+                String line = null;
+                try {
+                    line = reader.readLine();
+                } catch (SocketTimeoutException e) {
+                    continue;
+                }
+                socket.setSoTimeout(0);
+
                 try {
                     guess = Integer.parseInt(line);
                 } catch (NumberFormatException e) {

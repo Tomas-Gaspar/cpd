@@ -117,8 +117,17 @@ public class ServerController {
 
                                 GameServer gameServer = matchmakingServer.getPlayerGame(clientId);
 
-                                int guess = GameServer.getGuess(reader, writer);
+                                Integer guess = GameServer.getGuess(socket, reader, writer);
                                 gameServer.addGuess(clientId, guess);
+
+                                // If timeout occured consume the guess
+                                if (guess == null) {
+                                    try {
+                                        reader.readLine();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
 
                                 lock.lock();
                                 try {
