@@ -32,6 +32,8 @@ public class ServerController {
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("Server is listening on port " + port);
 
+        serverSocket.setSoTimeout(0);
+
         Thread virtualThread = Thread.ofVirtual().factory().newThread(() -> {
             try {
                 userDB.storeDB();
