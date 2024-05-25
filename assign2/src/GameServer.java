@@ -143,8 +143,9 @@ public class GameServer {
                     line = reader.readLine();
                 } catch (SocketTimeoutException e) {
                     continue;
+                } finally {
+                    socket.setSoTimeout(0);
                 }
-                socket.setSoTimeout(0);
 
                 try {
                     guess = Integer.parseInt(line);
