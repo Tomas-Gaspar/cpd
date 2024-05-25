@@ -42,7 +42,7 @@ To start the online game server, after downloading the zip file containing this 
 
 ### Architecture
 
-In this section, we will explore the architecture of our system, as depicted in the image below
+In this section, we will explore the architecture of our system, as depicted in the image below:
 
 ![Architecture](./images/architecture.png)
 
@@ -76,10 +76,10 @@ The Rank Matchmaking approach uses players' ELO ratings to create balanced games
 
 ### Fault Tolerence
 
-When players are waiting to find a match a heartbeat protocol ensures that matches aren't created with clients that have lost their connection.. If the heartbeeat protocol detects a broken connection, the player is not removed from the queue but is marked as not present. This way, if the client reenters the queue, their position is preserved.
+When players are waiting to find a match, a heartbeat protocol ensures that matches aren't created with clients that have lost their connection. If the heartbeat protocol detects a broken connection, the player is not removed from the queue but is marked as not present. This way, if the client reenters the queue, their position is preserved.
 
 ### Concurrency
-A reentrant lock was used to ensure thread safety and race conditions. This lock managed access to shared data structures, allowing multiple threads to synchronize effectively without conflicts. 
+We used a reentrant lock to ensure thread safety and race conditions. This lock manages access to shared data structures, allowing multiple threads to synchronize effectively without conflicts. 
 
 To prevent slow clients from causing system-wide delays, timeout mechanisms were implemented, particularly in the heartbeat protocol and the guessing functionality.
 
