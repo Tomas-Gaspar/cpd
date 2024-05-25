@@ -46,7 +46,7 @@ In this section, we will explore the architecture of our system, as depicted in 
 
 ![Architecture](./images/architecture.png)
 
-- **ServerController**: It's the main server controller for our game. It sets up a server socket, listens for incoming client connections, and handles user authentication and matchmaking. It also manages game sessions, including ranked and unranked matches, and handles user disconnections and shutdowns. The server uses multithreading to handle multiple clients simultaneously
+- **ServerController**: It's the main server controller for our game. It sets up a server socket, listens for incoming client connections, and handles user authentication and matchmaking. It also manages game sessions, including ranked and unranked matches, and handles user disconnections and shutdowns. The server uses multithreading to handle multiple clients simultaneously.
 
 - **ClientController**: It connects to a server using a hostname and port number provided as arguments. It then creates an authentication client and a main menu client, and starts a loop where it waits for responses from the main menu. Depending on the response, it either handles a heartbeat signal, starts a game client, continues to the next iteration of the loop, or exits the loop. It also handles exceptions for unknown hosts and I/O errors. The handleHeartbeat method listens for "HEARTBEAT" or "MATCHED" messages from the server and responds accordingly.
 
@@ -75,10 +75,13 @@ As the maximum number of players required for a game to start is 6, in the Simpl
 The Rank Matchmaking approach uses players' ELO ratings to create balanced games, ensuring that all players in a match have similar skill levels. To prevent long wait times, the system gradually relaxes its matching criteria over time, allowing players to join games even if a perfect ELO match is not found, thus avoiding starvation.
 
 ### Fault Tolerence
-TODO: Gaspar
+
+When players are waiting to find a match a heartbeat protocol ensures that matches aren't created with clients that have lost their connection.. If the heartbeeat protocol detects a broken connection, the player is not removed from the queue but is marked as not present. This way, if the client reenters the queue, their position is preserved.
 
 ### Concurrency
-TODO: Gaspar
+A reentrant lock was used to ensure thread safety and race conditions. This lock managed access to shared data structures, allowing multiple threads to synchronize effectively without conflicts. 
+
+To prevent slow clients from causing system-wide delays, timeout mechanisms were implemented, particularly in the heartbeat protocol and the guessing functionality.
 
 ### Game
 
